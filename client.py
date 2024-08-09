@@ -11,6 +11,8 @@ def start_client(host='127.0.0.1', port=8080):
             s.sendall(message.encode())
             data = s.recv(1024)
             print(f"{data.decode()}")  
+            if (data.decode().endswith("Goodbye!")):
+                break
 
 if __name__ == "__main__":
     start_client()

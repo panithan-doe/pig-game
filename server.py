@@ -40,33 +40,37 @@ def start_server(host='127.0.0.1', port=8080):
                         print(f"[{currentPlayer.name.upper()}] rolled, die value = {dieValue}")
                         # random value = 1
                         if dieValue == 1:
+                            print(f"{currentPlayer.name.upper()}'s turn is end!")
                             response = f"Die value is 1💥\n[{diceGame.players[1 - diceGame.turn].name.upper()}] turn! ('roll'🎲 or 'hold'⬇️)"
                             currentPlayer.reset_temp_score()
                             diceGame.swapTurn()
                             
                         else:
                             currentPlayer.increaseTempScore(dieValue)
-                            response = f">> {dieValue}\nTemp: {currentPlayer.temp_score} ('roll'🎲 again or 'hold'⬇️)"
+                            response = f">> {dieValue}\n{currentPlayer}('roll'🎲 again or 'hold'⬇️)"
                         
                         conn.sendall(response.encode())
                     
                     elif message == "hold":
                         currentPlayer.hold()
-                        response = f"Hold!\n{currentPlayer}\n[{diceGame.players[1 - diceGame.turn].name.upper()}] turn! ('roll'🎲 or 'hold'⬇️)"
+                        response = f"{currentPlayer}\n[{diceGame.players[1 - diceGame.turn].name.upper()}] turn! ('roll'🎲 or 'hold'⬇️)"
                         
                         if currentPlayer.total_score >= 60:
+                            print(f"{currentPlayer.name.upper()} wins.")
                             response = f"{currentPlayer.name.upper()} wins! Play again?('y')"
                             conn.sendall(response.encode())
-                            
                             data = conn.recv(1024)
                             print(f"Received: {data.decode()}")
+
+                            diceGame.reset_game()
+
                             if data.decode().strip().lower() == 'y':
                                 print("Game restart.")
-                                diceGame.reset_game()
+                                
                                 response = "New game started! Type 'dice' to begin."
                             else:
                                 response = "Thank you for playing! Goodbye!"
-                                conn.sendall(response.encode())
+                                conn.sendall((response.encode(), "quit"))
                                 break
 
                             conn.sendall(response.encode())
